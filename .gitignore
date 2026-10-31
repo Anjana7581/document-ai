@@ -1,0 +1,8 @@
+venv/
+.env
+logs/
+__pycache__/
+storage/documents/*
+storage/vector_db/*
+storage/metadata/
+!storage/**/.gitkeep

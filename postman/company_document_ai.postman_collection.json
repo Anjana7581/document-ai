@@ -1,0 +1,565 @@
+{
+  "info": {
+    "name": "Company Document AI",
+    "description": "Setup: 1) Start the Flask app. 2) Open the collection's Variables tab and set base_url (default http://127.0.0.1:5000). 3) If you set API_KEY in .env, put the same value in api_key. 4) Run requests 1 to 8 in order; document_id is filled in automatically after Upload.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:5000"
+    },
+    {
+      "key": "api_key",
+      "value": ""
+    },
+    {
+      "key": "document_id",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Upload document",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}",
+            "description": "Only needed if API_KEY is set in .env"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/documents/upload",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "documents",
+            "upload"
+          ]
+        },
+        "description": "Body type: form-data. Key 'file' (type File). Allowed: PDF, DOCX, TXT, MD. Saves the document_id automatically.",
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": []
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const j = pm.response.json();",
+              "if (j.document_id) pm.collectionVariables.set('document_id', j.document_id);"
+            ]
+          }
+        }
+      ],
+      "response": [
+        {
+          "name": "Example response",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Only needed if API_KEY is set in .env"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/documents/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "documents",
+                "upload"
+              ]
+            },
+            "description": "Body type: form-data. Key 'file' (type File). Allowed: PDF, DOCX, TXT, MD. Saves the document_id automatically.",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"document_id\": \"doc_1a2b3c4d5e6f\",\n  \"status\": \"uploaded\",\n  \"document\": {\n    \"document_id\": \"doc_1a2b3c4d5e6f\",\n    \"filename\": \"course_details.pdf\",\n    \"extension\": \".pdf\",\n    \"size_bytes\": 20480,\n    \"status\": \"uploaded\",\n    \"chunk_count\": 0,\n    \"page_count\": 4,\n    \"created_at\": \"2026-10-27T10:00:00+00:00\",\n    \"updated_at\": \"2026-10-27T10:00:30+00:00\",\n    \"indexed_at\": \"2026-10-27T10:00:30+00:00\",\n    \"error\": null\n  },\n  \"message\": \"Uploaded. Call POST /api/documents/{id}/process next.\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "2. Process (index) document",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}",
+            "description": "Only needed if API_KEY is set in .env"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/documents/{{document_id}}/process",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "documents",
+            "{{document_id}}",
+            "process"
+          ]
+        },
+        "description": "Extracts text, chunks it, creates embeddings and stores them in ChromaDB. May take a while for big files."
+      },
+      "response": [
+        {
+          "name": "Example response",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Only needed if API_KEY is set in .env"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/documents/{{document_id}}/process",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "documents",
+                "{{document_id}}",
+                "process"
+              ]
+            },
+            "description": "Extracts text, chunks it, creates embeddings and stores them in ChromaDB. May take a while for big files."
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"document_id\": \"doc_1a2b3c4d5e6f\",\n  \"status\": \"indexed\",\n  \"document\": {\n    \"document_id\": \"doc_1a2b3c4d5e6f\",\n    \"filename\": \"course_details.pdf\",\n    \"extension\": \".pdf\",\n    \"size_bytes\": 20480,\n    \"status\": \"indexed\",\n    \"chunk_count\": 12,\n    \"page_count\": 4,\n    \"created_at\": \"2026-10-27T10:00:00+00:00\",\n    \"updated_at\": \"2026-10-27T10:00:30+00:00\",\n    \"indexed_at\": \"2026-10-27T10:00:30+00:00\",\n    \"error\": null\n  },\n  \"message\": \"Document indexed.\",\n  \"chunks_indexed\": 12\n}"
+        }
+      ]
+    },
+    {
+      "name": "3. Check document status",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}",
+            "description": "Only needed if API_KEY is set in .env"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/documents/{{document_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "documents",
+            "{{document_id}}"
+          ]
+        },
+        "description": "Status is one of: uploaded, processing, indexed, failed."
+      },
+      "response": [
+        {
+          "name": "Example response",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Only needed if API_KEY is set in .env"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/documents/{{document_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "documents",
+                "{{document_id}}"
+              ]
+            },
+            "description": "Status is one of: uploaded, processing, indexed, failed."
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"document_id\": \"doc_1a2b3c4d5e6f\",\n  \"status\": \"indexed\",\n  \"document\": {\n    \"document_id\": \"doc_1a2b3c4d5e6f\",\n    \"filename\": \"course_details.pdf\",\n    \"extension\": \".pdf\",\n    \"size_bytes\": 20480,\n    \"status\": \"indexed\",\n    \"chunk_count\": 12,\n    \"page_count\": 4,\n    \"created_at\": \"2026-10-27T10:00:00+00:00\",\n    \"updated_at\": \"2026-10-27T10:00:30+00:00\",\n    \"indexed_at\": \"2026-10-27T10:00:30+00:00\",\n    \"error\": null\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "4. List documents",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}",
+            "description": "Only needed if API_KEY is set in .env"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/documents",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "documents"
+          ]
+        },
+        "description": "Lists all uploaded documents."
+      },
+      "response": [
+        {
+          "name": "Example response",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Only needed if API_KEY is set in .env"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/documents",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "documents"
+              ]
+            },
+            "description": "Lists all uploaded documents."
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"count\": 1,\n  \"documents\": [\n    {\n      \"document_id\": \"doc_1a2b3c4d5e6f\",\n      \"filename\": \"course_details.pdf\",\n      \"extension\": \".pdf\",\n      \"size_bytes\": 20480,\n      \"status\": \"indexed\",\n      \"chunk_count\": 12,\n      \"page_count\": 4,\n      \"created_at\": \"2026-10-27T10:00:00+00:00\",\n      \"updated_at\": \"2026-10-27T10:00:30+00:00\",\n      \"indexed_at\": \"2026-10-27T10:00:30+00:00\",\n      \"error\": null\n    }\n  ]\n}"
+        }
+      ]
+    },
+    {
+      "name": "5. Ask a question",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}",
+            "description": "Only needed if API_KEY is set in .env"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/chat",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "chat"
+          ]
+        },
+        "description": "Answers only from indexed documents.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"question\": \"What courses does the company offer?\"\n}"
+        }
+      },
+      "response": [
+        {
+          "name": "Example response",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Only needed if API_KEY is set in .env"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/chat",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "chat"
+              ]
+            },
+            "description": "Answers only from indexed documents.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"What courses does the company offer?\"\n}"
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"question\": \"What courses does the company offer?\",\n  \"answer\": \"According to the uploaded documents, the company offers ...\",\n  \"answer_found\": true,\n  \"sources\": [\n    {\n      \"document_id\": \"doc_1a2b3c4d5e6f\",\n      \"filename\": \"course_details.pdf\",\n      \"page\": 3\n    }\n  ]\n}"
+        }
+      ]
+    },
+    {
+      "name": "6. Reindex document",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}",
+            "description": "Only needed if API_KEY is set in .env"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/documents/{{document_id}}/reindex",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "documents",
+            "{{document_id}}",
+            "reindex"
+          ]
+        },
+        "description": "Optional: in Body > form-data add key 'file' (same file type) to replace the stored file. With no body it re-reads the stored file. Old chunks are replaced only after the new ones are saved.",
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": [],
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Example response",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Only needed if API_KEY is set in .env"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/documents/{{document_id}}/reindex",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "documents",
+                "{{document_id}}",
+                "reindex"
+              ]
+            },
+            "description": "Optional: in Body > form-data add key 'file' (same file type) to replace the stored file. With no body it re-reads the stored file. Old chunks are replaced only after the new ones are saved.",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"document_id\": \"doc_1a2b3c4d5e6f\",\n  \"status\": \"indexed\",\n  \"document\": {\n    \"document_id\": \"doc_1a2b3c4d5e6f\",\n    \"filename\": \"course_details.pdf\",\n    \"extension\": \".pdf\",\n    \"size_bytes\": 20480,\n    \"status\": \"indexed\",\n    \"chunk_count\": 12,\n    \"page_count\": 4,\n    \"created_at\": \"2026-10-27T10:00:00+00:00\",\n    \"updated_at\": \"2026-10-27T10:00:30+00:00\",\n    \"indexed_at\": \"2026-10-27T10:00:30+00:00\",\n    \"error\": null\n  },\n  \"message\": \"Document re-indexed.\",\n  \"chunks_indexed\": 12\n}"
+        }
+      ]
+    },
+    {
+      "name": "7. Delete document",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}",
+            "description": "Only needed if API_KEY is set in .env"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/documents/{{document_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "documents",
+            "{{document_id}}"
+          ]
+        },
+        "description": "Deletes the file, metadata and all vector records."
+      },
+      "response": [
+        {
+          "name": "Example response",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Only needed if API_KEY is set in .env"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/documents/{{document_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "documents",
+                "{{document_id}}"
+              ]
+            },
+            "description": "Deletes the file, metadata and all vector records."
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Document and its vector records were deleted.\",\n  \"document_id\": \"doc_1a2b3c4d5e6f\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "8. Health check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/health",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "health"
+          ]
+        },
+        "description": "No API key needed."
+      },
+      "response": [
+        {
+          "name": "Example response",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "No API key needed."
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"status\": \"healthy\",\n  \"checks\": {\n    \"flask\": \"ok\",\n    \"ollama\": \"ok\",\n    \"llm_model\": \"ok\",\n    \"embedding_model\": \"ok\",\n    \"vector_db\": \"ok\",\n    \"indexed_chunks\": 12\n  }\n}"
+        }
+      ]
+    }
+  ]
+}
