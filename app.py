@@ -2,7 +2,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 from types import SimpleNamespace
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory  # CHANGE 1: added send_from_directory
 from werkzeug.exceptions import HTTPException
 
 from config import BASE_DIR, Config
@@ -58,6 +58,11 @@ def create_app(config=None, services=None):
 
     for bp in (doc_bp, chat_bp, health_bp):
         app.register_blueprint(bp)
+
+    # CHANGE 2: serve the chat page at http://127.0.0.1:5000
+    @app.get("/")
+    def home():
+        return send_from_directory(BASE_DIR / "frontend", "index.html")
 
     def error(status, code, message, details=None):
         body = {"success": False, "error": {"code": code, "message": message}}
