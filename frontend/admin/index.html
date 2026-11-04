@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CodertechPRO Admin</title>
+<style>
+:root{--ink:#14143c;--muted:#6b6f93;--line:#e4e6f2;--bg:#f6f7fb;--brand:#4a4de6;--side:#12123a;--side2:#1c1c4d;--sidew:248px;--head:#f8f9fd}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Inter,system-ui,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+[hidden]{display:none!important}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+#login{max-width:360px;margin:14vh auto 0;background:#fff;border:1px solid var(--line);border-radius:14px;padding:32px 28px}
+#login h1{margin:0 0 4px;font-size:22px}
+#login p{margin:0 0 20px;color:var(--muted);font-size:14px}
+label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+input[type=text],input[type=password],input[type=search]{width:100%;font:inherit;border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:14px;outline:0;background:#fff;color:inherit}
+input[type=text]:focus,input[type=password]:focus,input[type=search]:focus{border-color:var(--brand)}
+.show{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin:-4px 0 16px}
+.err{color:#c0262d;font-size:14px;min-height:20px;margin:0 0 10px}
+#go{width:100%;padding:11px;font-weight:600}
+.btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:8px;padding:7px 12px;font-size:13px;margin:0 4px 4px 0}
+.btn:hover{border-color:#c9ccea}
+.btn.pri{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+.btn.del{color:#c0262d}
+.btn:disabled{opacity:.6;cursor:default}
+
+/* layout */
+#app{display:flex;min-height:100vh}
+.side{width:var(--sidew);flex:none;background:var(--side);color:#c9cbf0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;padding:20px 14px;z-index:30;transition:transform .2s}
+.brand{display:flex;align-items:center;gap:10px;color:#fff;font-weight:700;font-size:17px;padding:4px 10px 22px}
+.logo{width:30px;height:30px;border-radius:8px;background:var(--brand);display:grid;place-items:center;font-size:13px;font-weight:800}
+.nav-h{font-size:12px;color:#8a8dc4;padding:14px 10px 6px}
+.nav{display:flex;align-items:center;justify-content:space-between;width:100%;background:none;border:0;color:inherit;text-align:left;padding:9px 10px;border-radius:8px;font-size:14px;margin:0 0 2px}
+.nav:hover{background:var(--side2);color:#fff}
+.nav.on{background:var(--brand);color:#fff;font-weight:600}
+.nav .n{font-size:12px;background:rgba(255,255,255,.14);border-radius:20px;padding:1px 8px;min-width:24px;text-align:center}
+.side .grow{flex:1}
+.me{border-top:1px solid #2a2a60;padding-top:14px}
+.me .nav{color:#f0b3b6}
+.scrim{position:fixed;inset:0;background:rgba(20,20,60,.45);z-index:20}
+.main{flex:1;min-width:0}
+.top{display:flex;align-items:center;gap:12px;background:#fff;border-bottom:1px solid var(--line);padding:14px 24px}
+.top h1{font-size:18px;margin:0;flex:1}
+#menu{display:none;padding:6px 10px;margin:0}
+.wrap{max-width:1300px;margin:24px auto;padding:0 16px}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.stats.five{grid-template-columns:repeat(5,1fr)}
+.stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.stat b{display:block;font-size:26px;line-height:1.1;margin-bottom:4px}
+.stat span{font-size:13px;color:var(--muted)}
+.stat.warn b{color:#9a5b00}
+.stat.good b{color:#17803d}
+
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:auto}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:16px 20px;border-bottom:1px solid var(--line)}
+.bar h2{margin:0;font-size:16px}
+.sub{display:block;color:var(--muted);font-size:12px;margin-top:3px}
+.sub.bad{color:#c0262d}
+.tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#q,#uq-q{width:220px;margin:0 4px 4px 0;padding:8px 12px;font-size:13px}
+select.sel{font:inherit;font-size:13px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:0 4px 4px 0;background:#fff;color:var(--ink)}
+
+/* tables */
+table{width:100%;border-collapse:collapse}
+table.wide{min-width:1320px;table-layout:fixed}
+th,td{text-align:left;padding:16px 18px;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px;line-height:1.45}
+th{color:var(--muted);font-weight:600;font-size:12.5px;white-space:nowrap;background:var(--head);padding-top:12px;padding-bottom:12px}
+th:first-child,td:first-child{padding-left:20px}
+th:last-child,td:last-child{padding-right:20px}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:#fafbff}
+.pill{display:inline-block;border-radius:20px;padding:3px 11px;font-size:12px;font-weight:600;white-space:nowrap}
+.pill.dot::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;margin-right:6px;vertical-align:middle}
+.indexed{background:#dcf7e6;color:#17803d}
+.uploaded{background:#fff1d6;color:#9a5b00}
+.processing{background:#e3ecff;color:#1d4fd6}
+.failed{background:#fde4e4;color:#c0262d}
+.empty{padding:48px 20px;text-align:center;color:var(--muted)}
+.none{color:var(--muted)}
+.dt b{display:block;font-weight:600;font-size:13px;white-space:nowrap}
+.dt span{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.qt{font-weight:600;word-break:break-word}
+.cnt{display:inline-grid;place-items:center;min-width:32px;height:32px;padding:0 8px;border-radius:16px;background:#eef0ff;color:#3b3fc7;font-weight:700;font-size:13px}
+.ans-cell{white-space:pre-wrap;word-break:break-word;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer;color:#2b2d57}
+.ans-cell.open{display:block;-webkit-line-clamp:unset;overflow:visible}
+.mail-sum{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px}
+.mail-l{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 0;font-size:12.5px}
+.mail-l .em{word-break:break-all}
+.tag{display:inline-block;border-radius:10px;padding:1px 8px;font-size:11px;font-weight:600;white-space:nowrap}
+.tag.sent{background:#dcf7e6;color:#17803d}
+.tag.todo{background:#fff1d6;color:#9a5b00}
+.tag.wait{background:#e3ecff;color:#1d4fd6}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+.acts .btn{margin:0}
+
+textarea.ans{display:block;width:100%;font:inherit;font-size:14px;border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:0 0 10px;resize:vertical;outline:0}
+textarea.ans:focus{border-color:var(--brand)}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#14143c;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;max-width:90vw;z-index:50}
+dialog{border:0;border-radius:14px;padding:0;width:min(820px,94vw);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(20,20,60,.45)}
+.vh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.vh h3{margin:0;font-size:16px;word-break:break-word}
+.dbody{padding:16px 18px}
+#vbody{max-height:70vh;overflow:auto;padding:16px 18px;white-space:pre-wrap;word-wrap:break-word;font-size:14px;line-height:1.55}
+.pg{display:block;margin:14px 0 6px;font-size:12px;font-weight:700;color:var(--brand);letter-spacing:.04em}
+.pg:first-child{margin-top:0}
+
+@media(max-width:860px){
+  .side{position:fixed;left:0;top:0;transform:translateX(-100%)}
+  .side.open{transform:none}
+  #menu{display:inline-block}
+  .stats,.stats.five{grid-template-columns:repeat(2,1fr)}
+  .top{padding:12px 16px}
+}
+@media(prefers-reduced-motion:reduce){.side{transition:none}}
+</style>
+</head>
+<body>
+
+<form id="login" hidden>
+  <h1>CodertechPRO Admin</h1>
+  <p>Sign in to continue.</p>
+  <label for="user">Username</label>
+  <input id="user" type="text" autocomplete="username" required>
+  <label for="pass">Password</label>
+  <input id="pass" type="password" autocomplete="current-password" required>
+  <label class="show"><input id="showpw" type="checkbox"> Show password</label>
+  <p class="err" id="err" role="alert"></p>
+  <button class="btn pri" id="go">Sign in</button>
+</form>
+
+<div id="app" hidden>
+  <aside class="side" id="side" aria-label="Main navigation">
+    <div class="brand"><span class="logo">CT</span>CodertechPRO</div>
+    <div class="nav-h">Knowledge base</div>
+    <nav id="nav">
+      <button class="nav on" data-f="all">All documents <span class="n" id="n-all">0</span></button>
+    </nav>
+    <div class="nav-h">Customer questions</div>
+    <button class="nav" id="s-uq">All questions <span class="n" id="n-uq" title="Waiting for an answer">0</span></button>
+    <div class="nav-h">Actions</div>
+    <button class="nav" id="s-upload">Upload document</button>
+    <button class="nav" id="s-refresh">Refresh list</button>
+    <div class="grow"></div>
+    <div class="me"><button class="nav" id="logout">Log out</button></div>
+  </aside>
+  <div class="scrim" id="scrim" hidden></div>
+
+  <div class="main">
+    <div class="top">
+      <button class="btn" id="menu" aria-label="Open menu">Menu</button>
+      <h1 id="title">All documents</h1>
+    </div>
+    <div class="wrap">
+
+      <!-- Documents view -->
+      <div id="docsView">
+        <div class="stats">
+          <div class="stat"><b id="s-total">0</b><span>Documents</span></div>
+          <div class="stat"><b id="s-idx">0</b><span>Indexed</span></div>
+          <div class="stat"><b id="s-chunks">0</b><span>Chunks</span></div>
+          <div class="stat"><b id="s-size">0 KB</b><span>Total size</span></div>
+        </div>
+        <div class="card">
+          <div class="bar">
+            <div><h2>Documents</h2><span class="sub" id="count"></span></div>
+            <div class="tools">
+              <input type="search" id="q" placeholder="Search by file name" aria-label="Search documents">
+              <select class="sel" id="doc-f" aria-label="Filter documents">
+                <option value="all">All documents</option>
+                <option value="indexed">Indexed</option>
+                <option value="uploaded">Needs processing</option>
+                <option value="processing">Processing</option>
+                <option value="failed">Failed</option>
+              </select>
+              <button class="btn" id="refresh">Refresh</button>
+              <button class="btn pri" id="upload">Upload document</button>
+            </div>
+          </div>
+          <div id="list"></div>
+        </div>
+      </div>
+
+      <!-- Customer questions view: full history -->
+      <div id="uqView" hidden>
+        <div class="stats five">
+          <div class="stat"><b id="u-total">0</b><span>Total questions</span></div>
+          <div class="stat warn"><b id="u-wait">0</b><span>Waiting for an answer</span></div>
+          <div class="stat good"><b id="u-ans">0</b><span>Answered</span></div>
+          <div class="stat good"><b id="u-sent">0</b><span>Emails sent</span></div>
+          <div class="stat warn"><b id="u-unsent">0</b><span>Customers not emailed yet</span></div>
+        </div>
+        <div class="card">
+          <div class="bar">
+            <div><h2>Customer questions</h2><span class="sub" id="uq-count"></span></div>
+            <div class="tools">
+              <input type="search" id="uq-q" placeholder="Search question, answer or email" aria-label="Search questions">
+              <select class="sel" id="uq-f" aria-label="Filter questions">
+                <option value="all" selected>All questions</option>
+                <option value="pending">Waiting for answer</option>
+                <option value="answered">Answered</option>
+                <option value="unsent">Customers not emailed yet</option>
+              </select>
+              <button class="btn" id="uq-refresh">Refresh</button>
+            </div>
+          </div>
+          <div id="uq-list"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<input type="file" id="up" accept=".pdf,.docx,.txt,.md" hidden>
+<input type="file" id="rep" accept=".pdf,.docx,.txt,.md" hidden>
+
+<dialog id="viewer">
+  <div class="vh">
+    <h3 id="vtitle"></h3>
+    <div><a class="btn" id="vdl" style="display:inline-block;text-decoration:none;color:inherit">Download original</a> <button class="btn" id="vclose">Close</button></div>
+  </div>
+  <div id="vbody"></div>
+</dialog>
+
+<dialog id="ansDlg">
+  <div class="vh">
+    <h3 id="aq"></h3>
+    <button class="btn" id="aclose">Close</button>
+  </div>
+  <div class="dbody">
+    <label for="atext">Answer for customers</label>
+    <textarea id="atext" class="ans" rows="6" placeholder="Type the answer customers should get…"></textarea>
+    <span class="sub" id="ainfo"></span>
+    <p class="err" id="aerr" role="alert"></p>
+    <button class="btn pri" id="asave">Save answer</button>
+  </div>
+</dialog>
+
+<div id="toast" hidden></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const h = (tag, props = {}, ...kids) => {
+  const e = Object.assign(document.createElement(tag), props);
+  kids.flat().forEach(k => e.append(k));
+  return e;
+};
+let busy = false, target = null, timer, docs = [], filter = "all", query = "", view = "docs";
+let uqs = [], uqFilter = "all", uqQuery = "", uqTarget = null;
+const TITLES = { all: "All documents", indexed: "Indexed documents", uploaded: "Documents needing processing", processing: "Processing", failed: "Failed documents" };
+const LABELS = { all: "All documents", indexed: "Indexed", uploaded: "Needs processing", processing: "Processing", failed: "Failed" };
+const unsent = x => x.emails.filter(e => !e.notified).length;
+
+/* date on one line, time under it */
+const dt = s => {
+  if (!s) return h("span", { className: "none", textContent: "—" });
+  const d = new Date(s);
+  return h("div", { className: "dt" },
+    h("b", { textContent: d.toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" }) }),
+    h("span", { textContent: d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }));
+};
+
+function toast(msg, ms = 3500) {
+  const t = $("#toast");
+  t.textContent = msg; t.hidden = false;
+  clearTimeout(timer); timer = setTimeout(() => { t.hidden = true; }, ms);
+}
+function show(loggedIn) {
+  $("#login").hidden = loggedIn;
+  $("#app").hidden = !loggedIn;
+  if (!loggedIn) $("#user").focus();
+}
+function menu(open) {
+  $("#side").classList.toggle("open", open);
+  $("#scrim").hidden = !open;
+}
+async function post(path, body) {
+  const r = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body || {}) });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error((d.error && d.error.message) || "Something went wrong. Please try again.");
+  return d;
+}
+async function api(path, opt = {}) {
+  const r = await fetch(path, opt);
+  const d = await r.json().catch(() => ({}));
+  if (r.status === 401) { show(false); throw new Error("Please sign in again."); }
+  if (!r.ok) throw new Error((d.error && d.error.message) || "Something went wrong.");
+  return d;
+}
+async function run(label, fn, done) {
+  if (busy) return;
+  busy = true;
+  toast(label, 600000);
+  try { await fn(); toast(done); } catch (e) { toast(e.message, 7000); }
+  busy = false;
+  await load().catch(() => {});
+}
+const size = n => n > 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB";
+
+/* ---------- views ---------- */
+function setView(v) {
+  view = v;
+  $("#docsView").hidden = v !== "docs";
+  $("#uqView").hidden = v !== "uq";
+  $("#s-uq").classList.toggle("on", v === "uq");
+  if (v === "uq") {
+    $("#title").textContent = "Customer questions";
+    $("#nav .nav").classList.remove("on");
+    loadUq().catch(err => toast(err.message));
+  } else render();
+}
+
+/* ---------- documents ---------- */
+async function load() {
+  const d = await api("/api/admin/documents");
+  docs = d.documents || [];
+  render();
+  loadUq().catch(() => {});
+}
+
+function render() {
+  const by = s => docs.filter(x => x.status === s).length;
+  const counts = { all: docs.length, indexed: by("indexed"), uploaded: by("uploaded"), processing: by("processing"), failed: by("failed") };
+  $("#n-all").textContent = docs.length;
+  $("#s-total").textContent = docs.length;
+  $("#s-idx").textContent = counts.indexed;
+  $("#s-chunks").textContent = docs.reduce((a, x) => a + (x.chunk_count || 0), 0);
+  $("#s-size").textContent = size(docs.reduce((a, x) => a + (x.size_bytes || 0), 0));
+  document.querySelectorAll("#doc-f option").forEach(o => { o.textContent = LABELS[o.value] + " (" + counts[o.value] + ")"; });
+  $("#doc-f").value = filter;
+  if (view === "docs") {
+    $("#title").textContent = TITLES[filter];
+    $("#nav .nav").classList.add("on");
+  }
+
+  const q = query.trim().toLowerCase();
+  const shown = docs.filter(x => (filter === "all" || x.status === filter) && (!q || x.filename.toLowerCase().includes(q)));
+  $("#count").textContent = shown.length + " shown of " + docs.length;
+
+  if (!shown.length) {
+    $("#list").replaceChildren(h("div", { className: "empty", textContent: docs.length ? "No documents match this view." : "No documents yet. Click Upload document to add one." }));
+    return;
+  }
+  const btn = (text, fn, cls = "") => h("button", { className: "btn " + cls, textContent: text, onclick: fn });
+  const rows = shown.map(x => {
+    const url = "/api/admin/documents/" + x.document_id;
+    const acts = [btn("View", () => viewDoc(x))];
+    if (x.status === "uploaded" || x.status === "failed")
+      acts.push(btn("Process", () => run("Processing…", () => api(url + "/process", { method: "POST" }), "Document indexed.")));
+    if (x.status === "indexed")
+      acts.push(btn("Reindex", () => run("Reindexing…", () => api(url + "/reindex", { method: "POST" }), "Document reindexed.")));
+    acts.push(btn("Replace file", () => { target = x; $("#rep").value = ""; $("#rep").click(); }));
+    acts.push(btn("Delete", () => confirm("Delete " + x.filename + "? The AI will no longer use it.") &&
+      run("Deleting…", () => api(url, { method: "DELETE" }), "Document deleted."), "del"));
+    return h("tr", {},
+      h("td", {}, h("b", { textContent: x.filename }), h("span", { className: "sub", textContent: x.document_id })),
+      h("td", {}, h("span", { className: "pill dot " + x.status, textContent: x.status }),
+        x.error ? h("span", { className: "sub bad", textContent: x.error }) : ""),
+      h("td", { textContent: x.chunk_count }),
+      h("td", { textContent: size(x.size_bytes) }),
+      h("td", {}, dt(x.updated_at)),
+      h("td", {}, h("div", { className: "acts" }, acts)));
+  });
+  const head = h("tr", {}, ["File", "Status", "Chunks", "Size", "Updated", "Actions"].map(t => h("th", { textContent: t })));
+  $("#list").replaceChildren(h("table", {}, h("thead", {}, head), h("tbody", {}, rows)));
+}
+
+async function viewDoc(x) {
+  toast("Opening…", 600000);
+  try {
+    const d = await api("/api/admin/documents/" + x.document_id + "/content");
+    $("#vtitle").textContent = d.filename;
+    $("#vdl").href = "/api/admin/documents/" + x.document_id + "/download";
+    const parts = [];
+    d.pages.forEach(p => {
+      if (p.page) parts.push(h("span", { className: "pg", textContent: "Page " + p.page }));
+      parts.push(document.createTextNode(p.text.trim() + "\n\n"));
+    });
+    if (d.truncated) parts.push(h("span", { className: "pg", textContent: "Only the first part is shown. Download the original to read everything." }));
+    $("#vbody").replaceChildren(...parts);
+    $("#vbody").scrollTop = 0;
+    $("#toast").hidden = true;
+    $("#viewer").showModal();
+  } catch (e) { toast(e.message, 7000); }
+}
+$("#vclose").onclick = () => $("#viewer").close();
+
+/* ---------- customer questions (full history) ---------- */
+async function loadUq() {
+  const d = await api("/api/admin/unanswered?status=all");
+  uqs = d.questions || [];
+  renderUq();
+}
+
+function uqMatches(x) {
+  if (uqFilter === "pending" && x.status !== "pending") return false;
+  if (uqFilter === "answered" && x.status !== "answered") return false;
+  if (uqFilter === "unsent" && !unsent(x)) return false;
+  const s = uqQuery.trim().toLowerCase();
+  if (!s) return true;
+  return x.question.toLowerCase().includes(s) || (x.answer || "").toLowerCase().includes(s) ||
+    x.emails.some(e => e.email.includes(s));
+}
+
+const UQ_COLS = [["Question", "25%"], ["Asked", "80px"], ["Status", "130px"], ["First asked", "130px"],
+  ["Last updated", "130px"], ["Answered on", "130px"], ["Admin answer", "24%"], ["Emails", "230px"], ["Actions", "150px"]];
+
+function renderUq() {
+  const waiting = uqs.filter(x => x.status === "pending").length;
+  const sentCount = uqs.reduce((a, x) => a + x.emails.filter(e => e.notified).length, 0);
+  const unsentCount = uqs.reduce((a, x) => a + unsent(x), 0);
+  $("#n-uq").textContent = waiting;
+  $("#u-total").textContent = uqs.length;
+  $("#u-wait").textContent = waiting;
+  $("#u-ans").textContent = uqs.length - waiting;
+  $("#u-sent").textContent = sentCount;
+  $("#u-unsent").textContent = unsentCount;
+
+  const shown = uqs.filter(uqMatches);
+  $("#uq-count").textContent = shown.length + " shown of " + uqs.length + " total";
+  if (!shown.length) {
+    $("#uq-list").replaceChildren(h("div", { className: "empty",
+      textContent: uqs.length ? "No questions match this filter." : "Nothing here yet. Questions the AI cannot answer will appear in this list." }));
+    return;
+  }
+  const btn = (text, fn, cls = "") => h("button", { className: "btn " + cls, textContent: text, onclick: fn });
+  const rows = shown.map(x => {
+    const answered = x.status === "answered";
+    const pendingMail = unsent(x);
+    const sentMail = x.emails.length - pendingMail;
+
+    const mailCell = [];
+    if (!x.emails.length) {
+      mailCell.push(h("span", { className: "none", textContent: "No email requested" }));
+    } else {
+      mailCell.push(h("div", { className: "mail-sum",
+        textContent: sentMail + " sent · " + pendingMail + (answered ? " not sent" : " waiting") }));
+      x.emails.forEach(e => {
+        const label = e.notified ? "Sent" : (answered ? "Not sent" : "Waiting");
+        const cls = e.notified ? "sent" : (answered ? "todo" : "wait");
+        mailCell.push(h("div", { className: "mail-l" },
+          h("span", { className: "em", textContent: e.email }),
+          h("span", { className: "tag " + cls, textContent: label })));
+      });
+    }
+
+    const ans = answered
+      ? h("div", { className: "ans-cell", title: "Click to expand", textContent: x.answer })
+      : h("span", { className: "none", textContent: "Not answered yet" });
+    if (answered) ans.onclick = () => ans.classList.toggle("open");
+
+    return h("tr", {},
+      h("td", {}, h("div", { className: "qt", textContent: x.question })),
+      h("td", {}, h("span", { className: "cnt", textContent: x.count })),
+      h("td", {},
+        h("span", { className: "pill dot " + (answered ? "indexed" : "uploaded"), textContent: answered ? "Answered" : "Waiting" }),
+        answered && pendingMail ? h("span", { className: "sub bad", textContent: pendingMail + " email(s) not sent" }) : ""),
+      h("td", {}, dt(x.created_at)),
+      h("td", {}, dt(x.updated_at)),
+      h("td", {}, dt(x.answered_at)),
+      h("td", {}, ans),
+      h("td", {}, mailCell),
+      h("td", {}, h("div", { className: "acts" },
+        btn(answered ? "Edit answer" : "Answer", () => openAnswer(x), "pri"),
+        btn("Delete", () => delUq(x), "del"))));
+  });
+  const cols = h("colgroup", {}, UQ_COLS.map(([, w]) => { const c = h("col"); c.style.width = w; return c; }));
+  const head = h("tr", {}, UQ_COLS.map(([t]) => h("th", { textContent: t })));
+  $("#uq-list").replaceChildren(h("table", { className: "wide" }, cols, h("thead", {}, head), h("tbody", {}, rows)));
+}
+
+function openAnswer(x) {
+  uqTarget = x;
+  $("#aq").textContent = x.question;
+  $("#atext").value = x.answer || "";
+  $("#aerr").textContent = "";
+  const n = unsent(x);
+  $("#ainfo").textContent = x.status === "pending"
+    ? (n ? n + " customer(s) will be emailed when you save." : "No customers asked for an email.")
+    : (n ? n + " customer(s) have not been emailed yet. Saving will send it to them."
+         : "Everyone who asked was already emailed. Saving only updates the answer.");
+  $("#asave").textContent = x.status === "answered" ? "Update answer" : "Save answer";
+  $("#ansDlg").showModal();
+  $("#atext").focus();
+}
+$("#aclose").onclick = () => $("#ansDlg").close();
+$("#asave").onclick = async () => {
+  if (!uqTarget) return;
+  const b = $("#asave");
+  b.disabled = true; $("#aerr").textContent = "";
+  try {
+    const d = await api("/api/admin/unanswered/" + encodeURIComponent(uqTarget.id) + "/answer", {
+      method: "PUT", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ answer: $("#atext").value })
+    });
+    const m = d.emails;
+    $("#ansDlg").close();
+    toast(m.mail_disabled ? "Answer saved. Email is not set up, so no emails were sent."
+      : "Answer saved. Emails sent: " + m.sent + (m.failed ? ", failed: " + m.failed : "") + ".", 6000);
+    await loadUq();
+  } catch (e) { $("#aerr").textContent = e.message; }
+  b.disabled = false;
+};
+async function delUq(x) {
+  if (!confirm("Delete this question and its history?")) return;
+  try {
+    await api("/api/admin/unanswered/" + encodeURIComponent(x.id), { method: "DELETE" });
+    await loadUq();
+  } catch (e) { toast(e.message, 7000); }
+}
+
+/* ---------- login and wiring ---------- */
+$("#login").onsubmit = async e => {
+  e.preventDefault();
+  $("#err").textContent = "";
+  $("#go").disabled = true;
+  try {
+    await post("/api/admin/login", { username: $("#user").value.trim(), password: $("#pass").value });
+    $("#pass").value = "";
+    show(true);
+    await load().catch(err => toast(err.message));
+  } catch (err) {
+    $("#err").textContent = err.message;
+  }
+  $("#go").disabled = false;
+};
+$("#logout").onclick = async () => { await post("/api/admin/logout").catch(() => {}); menu(false); show(false); };
+$("#showpw").onchange = e => { $("#pass").type = e.target.checked ? "text" : "password"; };
+const refresh = () => (view === "uq" ? loadUq() : load()).catch(err => toast(err.message));
+const pick = () => { $("#up").value = ""; $("#up").click(); };
+$("#refresh").onclick = refresh;
+$("#s-refresh").onclick = () => { menu(false); refresh(); };
+$("#upload").onclick = pick;
+$("#s-upload").onclick = () => { menu(false); setView("docs"); pick(); };
+$("#menu").onclick = () => menu(true);
+$("#scrim").onclick = () => menu(false);
+$("#q").oninput = e => { query = e.target.value; render(); };
+$("#doc-f").onchange = e => { filter = e.target.value; render(); };
+$("#nav").onclick = e => {
+  const b = e.target.closest(".nav");
+  if (!b) return;
+  filter = "all"; menu(false); setView("docs");
+};
+$("#s-uq").onclick = () => { menu(false); setView("uq"); };
+$("#uq-refresh").onclick = () => loadUq().catch(err => toast(err.message));
+$("#uq-f").onchange = e => { uqFilter = e.target.value; renderUq(); };
+$("#uq-q").oninput = e => { uqQuery = e.target.value; renderUq(); };
+$("#up").onchange = () => {
+  const f = $("#up").files[0];
+  if (!f) return;
+  const fd = new FormData(); fd.append("file", f);
+  run("Uploading and indexing… this can take a minute.", () => api("/api/admin/documents", { method: "POST", body: fd }), "Uploaded and indexed.");
+};
+$("#rep").onchange = () => {
+  const f = $("#rep").files[0];
+  if (!f || !target) return;
+  const fd = new FormData(); fd.append("file", f);
+  run("Replacing and reindexing…", () => api("/api/admin/documents/" + target.document_id + "/reindex", { method: "POST", body: fd }), "File replaced and reindexed.");
+};
+
+(async () => {
+  try {
+    const d = await (await fetch("/api/admin/me")).json();
+    show(!!d.logged_in);
+    if (d.logged_in) await load().catch(err => toast(err.message));
+  } catch (e) { show(false); }
+})();
+</script>
+</body>
+</html>

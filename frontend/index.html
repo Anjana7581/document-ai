@@ -44,6 +44,16 @@ header .sp{flex:1}
 #q::placeholder{color:#a3a6c8}
 #go{border:0;border-radius:22px;background:var(--grad);color:#fff;font-weight:600;font-size:16px;padding:11px 22px}
 #go:disabled{opacity:.5;cursor:default}
+
+/* email offer */
+.mail{align-self:flex-start;display:flex;flex-direction:column;gap:8px;max-width:85%}
+.mail input{border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;font-size:14px;outline:0;background:#fff;color:var(--ink)}
+.mail input:focus{border-color:#6a4cf0}
+.mail .row{display:flex;gap:8px}
+.mail button{border:0;border-radius:18px;padding:8px 16px;font-size:14px;font-weight:600;background:var(--grad);color:#fff}
+.mail button.skip{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.mail button:disabled{opacity:.5;cursor:default}
+.mail small{color:#c0262d;min-height:0}
 </style>
 </head>
 <body>
@@ -75,6 +85,7 @@ header .sp{flex:1}
 
 <script>
 const API_URL = "/api/chat";
+const NOTIFY_URL = "/api/chat/notify";
 const PHONE = "+91 9037010647";
 const $ = s => document.querySelector(s);
 const widget = $("#widget"), panel = $("#panel"), msgs = $("#msgs"), q = $("#q"), go = $("#go");
@@ -96,6 +107,48 @@ function add(text, cls) {
   msgs.scrollTop = msgs.scrollHeight;
   return d;
 }
+
+/* After a "not found" answer: offer an email update, or let the customer skip. */
+function offerEmail(id, text) {
+  add(text || "Would you like an email when our team answers this?", "bot");
+  const box = document.createElement("div");
+  box.className = "mail";
+  const inp = document.createElement("input");
+  inp.type = "email"; inp.placeholder = "you@example.com"; inp.maxLength = 254; inp.autocomplete = "email";
+  const err = document.createElement("small");
+  const row = document.createElement("div"); row.className = "row";
+  const yes = document.createElement("button"); yes.textContent = "Email me";
+  const no = document.createElement("button"); no.textContent = "Skip"; no.className = "skip";
+  row.append(yes, no);
+  box.append(inp, err, row);
+  msgs.appendChild(box);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  const finish = msg => { box.remove(); add(msg, "bot"); };
+  no.onclick = () => finish("No problem! Your question is with our team. 😊");
+  const send = async () => {
+    const email = inp.value.trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { err.textContent = "Please enter a valid email."; return; }
+    yes.disabled = true; err.textContent = "";
+    try {
+      const res = await fetch(NOTIFY_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question_id: id, email })
+      });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error((d.error && d.error.message) || "");
+      finish("Thank you! We'll email you as soon as we have the answer. 😊");
+    } catch (e) {
+      err.textContent = e.message || "Could not save your email. Please try again.";
+      yes.disabled = false;
+    }
+  };
+  yes.onclick = send;
+  inp.addEventListener("keydown", e => { if (e.key === "Enter") send(); });
+  inp.focus();
+}
+
 async function ask(text) {
   text = text.trim();
   if (!text || busy) return;
@@ -108,6 +161,7 @@ async function ask(text) {
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), 180000);
   let reply = "Sorry, I’m having trouble right now. Please call or WhatsApp us on " + PHONE + ".";
+  let data = null;
   try {
     const res = await fetch(API_URL, {
       method: "POST",
@@ -115,14 +169,17 @@ async function ask(text) {
       body: JSON.stringify({ question: text }),
       signal: ctl.signal
     });
-    const data = await res.json();
+    data = await res.json();
     if (res.ok && data.answer) reply = data.answer;
-  } catch (e) { /* keep the friendly fallback message */ }
+    else data = null;
+  } catch (e) { data = null; /* keep the friendly fallback message */ }
   clearTimeout(timer);
   wait.className = "m bot";
   wait.textContent = reply;
   msgs.scrollTop = msgs.scrollHeight;
-  busy = false; sync(); q.focus();
+  busy = false; sync();
+  if (data && data.ask_email && data.question_id) offerEmail(data.question_id, data.follow_up);
+  else q.focus();
 }
 $("#launcher").onclick = () => toggle(true);
 $("#close").onclick = () => toggle(false);

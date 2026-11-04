@@ -32,6 +32,18 @@ class Config:
             "EMBED_TIMEOUT_SECONDS": int(e("EMBED_TIMEOUT_SECONDS", "120")),
             "RELEVANCE_MAX_DISTANCE": float(e("RELEVANCE_MAX_DISTANCE", "0.9")),
             "API_KEY": e("API_KEY", "").strip(),
+            "ADMIN_USERNAME": e("ADMIN_USERNAME", "admin").strip(),
+            "ADMIN_PASSWORD": e("ADMIN_PASSWORD", ""),
+            "SECRET_KEY": e("SECRET_KEY", "").strip(),
+            "COOKIE_SECURE": e("COOKIE_SECURE", "false").lower() == "true",
+
+            "UNANSWERED_MATCH_SIMILARITY": float(e("UNANSWERED_MATCH_SIMILARITY", "0.88")),
+            "SMTP_HOST": e("SMTP_HOST", "").strip(),
+            "SMTP_PORT": int(e("SMTP_PORT", "587")),
+            "SMTP_USERNAME": e("SMTP_USERNAME", "").strip(),
+            "SMTP_PASSWORD": e("SMTP_PASSWORD", ""),
+            "SMTP_FROM": e("SMTP_FROM", "").strip(),
+            "SMTP_SECURITY": e("SMTP_SECURITY", "starttls").strip(),
         }
         values.update(overrides)
         for key, val in values.items():

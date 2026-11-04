@@ -8,8 +8,14 @@ from .errors import AppError
 log = logging.getLogger(__name__)
 
 NOT_FOUND_MESSAGE = (
-    "Thanks for asking! 😊 I'm sorry, I don't have the exact details on that right now. "
-    "Our team will be happy to help you personally. Kindly call or WhatsApp us on +91 9037010647."
+    "Thanks for asking! 😊 I don't have the answer to that just yet. "
+    "If you'd like a quick reply, you can call or WhatsApp our team on +91 9037010647."
+)
+
+EMAIL_OFFER_MESSAGE = (
+    "I've shared your question with our team, and we'll work on an answer for you. "
+    "Would you like us to email it to you as soon as it's ready? "
+    "Just type your email below, or tap Skip."
 )
 
 SYSTEM_PROMPT = (
